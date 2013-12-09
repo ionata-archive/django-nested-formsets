@@ -8,6 +8,7 @@ from itertools import chain
 from django.forms.models import ModelForm, ModelFormMetaclass
 
 from django.forms.util import ErrorList
+from django.forms.widgets import Media
 
 
 class NestedModelFormOptions(object):
@@ -63,6 +64,14 @@ class NestedModelForm(ModelForm):
         self.formsets = self._init_formsets(data, files, formset_extra)
         self.related_forms = self._init_related_forms(data, files,
                                                       related_form_extra)
+
+    def _get_media(self):
+        media_bits = chain(
+            [super(NestedModelForm, self)._get_media()],
+            (f.media for f in self.formsets.values()),
+            (f.media for f in self.related_forms.values()))
+        return sum(media_bits, Media())
+    media = property(_get_media)
 
     @property
     def subforms(self):
